@@ -1,32 +1,45 @@
 import { Firebot } from "@crowbartools/firebot-custom-scripts-types";
+import { initModules, logger } from "@oceanity/firebot-helpers/firebot";
+import { PronounsPlusService } from "./pronouns";
+import * as packageJson from "../package.json";
+import { AllPronounsPlusVariables } from "./firebot/variables";
 
-interface Params {
-  message: string;
-}
+export const {
+  name: namespace,
+  displayName: name,
+  description,
+  author,
+  version
+} = packageJson;
+
+interface Params { }
+
+export let pronounsPlus: PronounsPlusService;
 
 const script: Firebot.CustomScript<Params> = {
   getScriptManifest: () => {
     return {
-      name: "Starter Custom Script",
-      description: "A starter custom script for build",
-      author: "SomeDev",
-      version: "1.0",
+      name,
+      description,
+      author,
+      version,
       firebotVersion: "5",
     };
   },
   getDefaultParameters: () => {
     return {
-      message: {
-        type: "string",
-        default: "Hello World!",
-        description: "Message",
-        secondaryDescription: "Enter a message here",
-      },
     };
   },
   run: (runRequest) => {
-    const { logger } = runRequest.modules;
-    logger.info(runRequest.parameters.message);
+    initModules(runRequest.modules);
+
+    pronounsPlus = new PronounsPlusService();
+
+    for (const variable of AllPronounsPlusVariables) {
+      runRequest.modules.replaceVariableManager.registerReplaceVariable(variable);
+    }
+
+    logger.info("Finished initializing ")
   },
 };
 
